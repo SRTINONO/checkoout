@@ -1,0 +1,176 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Endereço - Reino do Hambúrguer</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #ffffff;
+            background-image: url('https://www.transparenttextures.com/patterns/food.png'); /* Textura sutil de comida */
+            background-size: cover;
+        }
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        .form-container h1 {
+            font-size: 1.8rem;
+            color: #d32f2f; /* Vermelho hambúrguer */
+            margin-bottom: 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .form-container img {
+            width: 80px;
+            margin-bottom: 1rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-size: 1.1rem;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #d32f2f;
+            box-shadow: 0 0 5px rgba(211, 47, 47, 0.3);
+        }
+        .icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 2.5rem;
+            color: #d32f2f;
+            font-size: 1.2rem;
+        }
+        button {
+            width: 100%;
+            padding: 1rem;
+            background-color: #d32f2f;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #b71c1c;
+            transform: scale(1.02);
+        }
+        .burger-decoration {
+            position: absolute;
+            opacity: 0.1;
+            width: 100px;
+            z-index: -1;
+        }
+        .burger-decoration.left {
+            top: 10%;
+            left: -50px;
+            transform: rotate(-30deg);
+        }
+        .burger-decoration.right {
+            bottom: 10%;
+            right: -50px;
+            transform: rotate(30deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <img src="https://img.icons8.com/fluency/48/000000/hamburger.png" alt="Reino do Hambúrguer Logo">
+        <h1>Reino do Hambúrguer</h1>
+        <form action="next-page.html">
+            <div class="form-group">
+                <label for="endereco">Endereço</label>
+                <span class="icon">🏠</span>
+                <input type="text" id="endereco" name="endereco" placeholder="Digite seu endereço" required>
+            </div>
+            <div class="form-group">
+                <label for="numero">Número</label>
+                <span class="icon">🔑</span>
+                <input type="text" id="numero" name="numero" placeholder="Digite o número" required>
+            </div>
+            <div class="form-group">
+                <label for="complemento">Complemento</label>
+                <span class="icon">🗃️</span>
+                <input type="text" id="complemento" name="complemento" placeholder="Apartamento, unidade, prédio, andar, etc.">
+            </div>
+            <div class="form-group">
+                <label for="bairro">Bairro</label>
+                <span class="icon">🏢</span>
+                <input type="text" id="bairro" name="bairro" placeholder="Digite o nome do bairro" required>
+            </div>
+            <button type="submit">Seguir</button>
+        </form>
+        <img src="https://img.icons8.com/fluency/48/000000/hamburger.png" class="burger-decoration left" alt="Hamburger Decoration">
+        <img src="https://img.icons8.com/fluency/48/000000/hamburger.png" class="burger-decoration right" alt="Hamburger Decoration">
+    </div>
+</body>
+</html>
